@@ -11,6 +11,8 @@ import Foundation
     import Cocoa
 #elseif os(iOS)
     import UIKit
+#elseif os(watchOS)
+    import WatchKit
 #endif
 
 public extension String {
@@ -63,13 +65,30 @@ internal extension String {
 }
 
 extension MKDataDetectorService {
-    
+
+    #if os(watchOS)
     /// Generates attributed text for the user interface given a set of analysis results on a text body.
     ///
     /// - Parameters:
     ///   - results: An array of analysis results.
     ///   - color: A color for highlighting matches.
     /// - Returns: An attributed string on the basis of the matches.
+    public func attributedText<T>(fromAnalysisResults results: [AnalysisResult<T>], withColor color: UIColor) -> NSMutableAttributedString? {
+        guard let firstResult = results.first else { return nil }
+        let attributedString = NSMutableAttributedString(string: firstResult.source)
+        for result in results {
+            attributedString.addAttribute(NSAttributedStringKey.foregroundColor, value: color, range: result.rangeInSource)
+        }
+        return attributedString
+    }
+    #else
+    /// Generates attributed text for the user interface given a set of analysis results on a text body.
+    ///
+    /// - Parameters:
+    ///   - results: An array of analysis results.
+    ///   - color: A color for highlighting matches.
+    /// - Returns: An attributed string on the basis of the matches.
+
     public func attributedText<T>(fromAnalysisResults results: [AnalysisResult<T>], withColor color: CGColor) -> NSMutableAttributedString? {
         guard let firstResult = results.first else { return nil }
         let attributedString = NSMutableAttributedString(string: firstResult.source)
@@ -82,5 +101,6 @@ extension MKDataDetectorService {
         }
         return attributedString
     }
+#endif
     
 }
